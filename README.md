@@ -1,4 +1,4 @@
-#Discord bot for Book Club management 
+### Discord bot for Book Club management 
 
 Contains features especially for Book club management. Features include: 
 
