@@ -8,6 +8,9 @@ use serenity::model::id::UserId;
 use serenity::prelude::Context;
 use std::collections::HashSet;
 
+use crate::commands::api_calls::get_top_books;
+
+use super::api_calls::get_genre_lists;
 #[help]
 #[command_not_found_text = "Command not found: `{}`"]
 #[strikethrough_commands_tip_in_dm(" ")]
@@ -28,13 +31,47 @@ fn help(
 }
 
 #[group]
-#[commands(ping, say)]
+#[commands(ping, say, genres, bestof)]
 struct General;
 
 #[command]
-
 fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
     msg.reply(&ctx, "Pong!")?;
+    Ok(())
+}
+
+#[command]
+fn genres(ctx: &mut Context, msg: &Message) -> CommandResult {
+    let list = get_genre_lists();
+    let mut string = String::new();
+    for entry in list.unwrap() {
+        string.push('\n');
+        string.push_str(&entry);
+    }
+    msg.reply(&ctx, format!("Following genres are available:\n{}", string))?;
+    Ok(())
+}
+
+#[command]
+fn bestof(ctx: &mut Context, msg: &Message, args: Args) -> CommandResult {
+    let mut string = String::new();
+    match get_top_books(args.rest()) {
+        Ok(list) => {
+            for (title, author, desc) in list {
+                string.push_str(&format!(
+                    "Book: {} \nAuthor: {} \nDescription: {}\n\n",
+                    title, author, desc
+                ));
+            }
+            msg.channel_id.say(&ctx.http, &string)?;
+        }
+        Err(_) => {
+            msg.channel_id.say(
+                &ctx.http,
+                &format!("No books found in {} genre", args.rest()),
+            )?;
+        }
+    };
     Ok(())
 }
 
