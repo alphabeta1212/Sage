@@ -8,14 +8,13 @@ use serenity::model::id::UserId;
 use serenity::prelude::Context;
 use std::collections::HashSet;
 
-use crate::commands::api_calls::get_top_books;
+use crate::commands::api_calls::{get_genre_lists, get_top_books};
 
-use super::api_calls::get_genre_lists;
 #[help]
 #[command_not_found_text = "Command not found: `{}`"]
 #[strikethrough_commands_tip_in_dm(" ")]
 #[strikethrough_commands_tip_in_guild(" ")]
-#[individual_command_tip = "?help (command) gives info about the command"]
+#[individual_command_tip = "!help <command> gives info about the specific command"]
 #[lacking_permissions = "Nothing"]
 #[lacking_role = "Nothing"]
 #[lacking_ownership = "Strike"]
