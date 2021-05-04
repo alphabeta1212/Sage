@@ -7,28 +7,28 @@ use serenity::{model::gateway::Ready, prelude::*};
 pub struct Handler;
 
 impl EventHandler for Handler {
-    fn reaction_add(&self, ctx: Context, reaction: Reaction) {
-        if let Err(why) = reaction.channel_id.say(
-            &ctx.http,
-            format!(
-                "{} left a reaction {}",
-                reaction.user(&ctx).unwrap().name,
-                match reaction.emoji {
-                    Custom {
-                        animated: _,
-                        id: _,
-                        name,
-                    } => name.unwrap(),
-                    Unicode(uni) => uni,
-                    _ => {
-                        String::new()
-                    }
-                }
-            ),
-        ) {
-            println!("Error reading reaction: {:?}", why);
-        }
-    }
+    // fn reaction_add(&self, ctx: Context, reaction: Reaction) {
+    //     if let Err(why) = reaction.channel_id.say(
+    //         &ctx.http,
+    //         format!(
+    //             "{} left a reaction {}",
+    //             reaction.user(&ctx).unwrap().name,
+    //             match reaction.emoji {
+    //                 Custom {
+    //                     animated: _,
+    //                     id: _,
+    //                     name,
+    //                 } => name.unwrap(),
+    //                 Unicode(uni) => uni,
+    //                 _ => {
+    //                     String::new()
+    //                 }
+    //             }
+    //         ),
+    //     ) {
+    //         println!("Error reading reaction: {:?}", why);
+    //     }
+    // }
 
     // fn message(&self, _ctx: Context, _new_message: Message) {
     //     if _new_message.content == "!ping" {
