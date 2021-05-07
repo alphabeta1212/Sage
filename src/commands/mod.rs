@@ -1,5 +1,5 @@
 pub mod admin;
-mod api_calls;
+pub mod api_calls;
 pub mod emoji;
 pub mod general;
 pub use admin::ADMIN_GROUP;

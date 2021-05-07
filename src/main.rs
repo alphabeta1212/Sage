@@ -10,11 +10,16 @@ use evt_handler::Handler;
 use serenity::client::Client;
 use serenity::framework::standard::StandardFramework;
 
+use commands::api_calls::qod_api;
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::Read;
-
-fn main() {
+#[tokio::main]
+async fn main() {
+    println!("Calling qod_Api");
+    let qod = qod_api::quote_of_the_day().await;
+    let (quote, author) = *qod.unwrap();
+    println!("Quote:{}\nAuthor:{}", quote, author);
     let mut file = File::open(".token.txt").expect("Cannot open File");
     let mut token = String::new();
     file.read_to_string(&mut token).expect("Error reading file");
