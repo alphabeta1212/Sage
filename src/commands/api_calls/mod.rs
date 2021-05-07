@@ -1,3 +1,5 @@
+pub mod qod_api;
+
 use serde::Deserialize;
 use std::fs::File;
 use std::{collections::HashMap, io::Read};
