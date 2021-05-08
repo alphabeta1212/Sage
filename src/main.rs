@@ -17,7 +17,7 @@ use std::io::Read;
 #[tokio::main]
 async fn main() {
     println!("Calling qod_Api");
-    let qod = qod_api::quote_of_the_day().await;
+    let qod = qod_api::quote_of_the_day("funny").await;
     let (quote, author) = *qod.unwrap();
     println!("Quote:{}\nAuthor:{}", quote, author);
     let mut file = File::open(".token.txt").expect("Cannot open File");

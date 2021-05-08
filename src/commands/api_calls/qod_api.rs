@@ -3,6 +3,11 @@ use std::collections::HashMap;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
+struct Cprt {
+    year: u16,
+    url: String,
+}
+#[derive(Debug, Deserialize)]
 struct QuoteJson {
     quote: String,
     length: String,
@@ -19,10 +24,10 @@ struct QuoteJson {
 
 #[derive(Debug, Deserialize)]
 struct OuterJson {
-    succsdf: HashMap<String, u8>,
+    success: HashMap<String, u8>,
     contents: HashMap<String, Vec<QuoteJson>>,
     baseurl: String,
-    copyright: HashMap<String, String>,
+    copyright: Cprt,
 }
 
 impl OuterJson {
@@ -39,10 +44,13 @@ impl OuterJson {
     }
 }
 
-pub async fn quote_of_the_day() -> Result<Box<(String, String)>, String> {
+pub async fn quote_of_the_day(category: &str) -> Result<Box<(String, String)>, String> {
     let client = reqwest::Client::new();
     match client
-        .get("https://quotes.rest/qod?language=en")
+        .get(format!(
+            "https://quotes.rest/qod?category={}&language=en",
+            category
+        ))
         .header("accept", "application/json")
         .send()
         .await
