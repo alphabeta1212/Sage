@@ -12,11 +12,15 @@ use serenity::framework::standard::StandardFramework;
 
 use commands::api_calls::qod_api;
 use std::collections::HashSet;
+use std::env;
 use std::fs::File;
 use std::io::Read;
 #[tokio::main]
 async fn main() {
     println!("Calling qod_Api");
+    let api_token = env::var("API_TOKEN").unwrap();
+    let nyt_token = env::var("NYT_TOKEN").unwrap();
+    println!("DISCORD TOKEN: {}\nBOOK TOKEN: {}", api_token, nyt_token);
     let qod = qod_api::quote_of_the_day("funny").await;
     let (quote, author) = *qod.unwrap();
     println!("Quote:{}\nAuthor:{}", quote, author);
@@ -35,7 +39,6 @@ async fn main() {
         Ok(info) => {
             let mut owners = HashSet::new();
             owners.insert(info.owner.id);
-
             owners
         }
         Err(why) => panic!("Could not access app info: {:?}", why),
