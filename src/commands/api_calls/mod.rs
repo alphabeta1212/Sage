@@ -1,8 +1,8 @@
 pub mod qod_api;
 
 use serde::Deserialize;
-use std::fs::File;
-use std::{collections::HashMap, io::Read};
+use std::collections::HashMap;
+use std::env;
 
 #[derive(Debug, Deserialize)]
 struct Obj {
@@ -75,12 +75,10 @@ impl Obj {
 
 #[tokio::main]
 pub async fn get_genre_lists() -> Result<Vec<String>, Box<dyn std::error::Error>> {
-    let mut file = File::open(".apitoken.txt").expect("Cannot open File");
-    let mut token = String::new();
-    file.read_to_string(&mut token).expect("Error reading file");
+    let nyt_token = env::var("NYT_TOKEN").unwrap();
     let list_names = reqwest::get(format!(
         "https://api.nytimes.com/svc/books/v3/lists/names.json?api-key={}",
-        &token
+        &nyt_token
     ))
     .await?
     .json::<Obj>()
@@ -92,12 +90,10 @@ pub async fn get_genre_lists() -> Result<Vec<String>, Box<dyn std::error::Error>
 
 #[tokio::main]
 pub async fn get_top_books(list_name: &str) -> Result<Vec<(String, String, String)>, String> {
-    let mut file = File::open(".apitoken.txt").expect("Cannot open File");
-    let mut token = String::new();
-    file.read_to_string(&mut token).expect("Error reading file");
+    let nyt_token = env::var("NYT_TOKEN").unwrap();
     match reqwest::get(format!(
         "https://api.nytimes.com/svc/books/v3/lists.json?list={}&api-key={}",
-        &list_name, &token
+        &list_name, &nyt_token
     ))
     .await
     {
