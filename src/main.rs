@@ -13,25 +13,19 @@ use serenity::framework::standard::StandardFramework;
 use commands::api_calls::qod_api;
 use std::collections::HashSet;
 use std::env;
-use std::fs::File;
-use std::io::Read;
 #[tokio::main]
 async fn main() {
     println!("Calling qod_Api");
     let api_token = env::var("API_TOKEN").unwrap();
-    let nyt_token = env::var("NYT_TOKEN").unwrap();
-    println!("DISCORD TOKEN: {}\nBOOK TOKEN: {}", api_token, nyt_token);
+    // println!("DISCORD TOKEN: {}\nBOOK TOKEN: {}", api_token, nyt_token);
     let qod = qod_api::quote_of_the_day("funny").await;
     let (quote, author) = *qod.unwrap();
     println!("Quote:{}\nAuthor:{}", quote, author);
-    let mut file = File::open(".token.txt").expect("Cannot open File");
-    let mut token = String::new();
-    file.read_to_string(&mut token).expect("Error reading file");
     let mut client: Client;
-    match token.len() {
+    match &api_token.len() {
         0 => panic!("Token Not found!!"),
         _ => {
-            client = Client::new(&token, Handler).expect("Error creating client");
+            client = Client::new(&api_token, Handler).expect("Error creating client");
         }
     };
 
