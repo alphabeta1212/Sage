@@ -1,1 +1,2 @@
-worker: .target/release/discordbot
+release: .target/release/discordbot
+web: .target/release/discordbot
