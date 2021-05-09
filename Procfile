@@ -1,1 +1,1 @@
-web: ./target/release/discordbot
+app: ./target/release/discordbot
