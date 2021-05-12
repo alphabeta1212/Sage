@@ -3,3 +3,4 @@
 /target/release/.fingerprint
 /target/release/deps
 .vscode/settings.json
+*.sh

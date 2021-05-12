@@ -17,10 +17,7 @@ use std::env;
 async fn main() {
     println!("Calling qod_Api");
     let api_token = env::var("API_TOKEN").unwrap();
-    // println!("DISCORD TOKEN: {}\nBOOK TOKEN: {}", api_token, nyt_token);
     let qod = qod_api::quote_of_the_day("funny").await;
-    let (quote, author) = *qod.unwrap();
-    println!("Quote:{}\nAuthor:{}", quote, author);
     let mut client: Client;
     match &api_token.len() {
         0 => panic!("Token Not found!!"),
@@ -37,7 +34,6 @@ async fn main() {
         }
         Err(why) => panic!("Could not access app info: {:?}", why),
     };
-
     client.with_framework(
         StandardFramework::new()
             .configure(|c| c.prefix("!").owners(owners))
@@ -49,4 +45,6 @@ async fn main() {
     if let Err(msg) = client.start() {
         println!("Error : {:?}", msg);
     }
+    let (quote, author) = *qod.unwrap();
+    println!("Quote:{}\nAuthor:{}", quote, author);
 }

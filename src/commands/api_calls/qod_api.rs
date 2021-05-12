@@ -12,7 +12,7 @@ struct QuoteJson {
     quote: String,
     length: String,
     author: String,
-    tags: HashMap<String, String>,
+    tags: Vec<String>,
     category: String,
     language: String,
     date: String,
