@@ -20,7 +20,7 @@ fn everyone(ctx: &mut Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-fn set_quote_channel(ctx: &mut Context, msg: &Message) -> CommandResult {
+fn set_quote_channel(ctx: &mut Context, msg: &Message, args: Args) -> CommandResult {
     let mut file = OpenOptions::new()
         .append(true)
         .open("sublist.txt")

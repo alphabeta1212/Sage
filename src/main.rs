@@ -61,7 +61,6 @@ async fn main() {
                             for subs in subscribers.split("\n").into_iter() {
                                 let chid: u64 = subs.parse::<u64>().expect("Not a u64 number");
                                 let channel = ChannelId(chid);
-                                println!("{}", subs);
                                 match subs.len() {
                                     0 => panic!("subscribers Not found!!"),
                                     _ => {
@@ -74,13 +73,14 @@ async fn main() {
                                             .expect("Failed to deliver message");
                                     }
                                 };
+                                println!("Sent quote to {}", subs);
                             }
                         }
                     };
                 }
                 Err(why) => println!("Error occurred: {}", why),
             };
-            sleep(Duration::from_secs(60 * 60)).await; //86400 seconds in a day
+            sleep(Duration::from_secs(86400)).await; //86400 seconds in a day
         }
     });
 
