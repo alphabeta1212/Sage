@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
 struct Cprt {
@@ -69,6 +68,6 @@ pub async fn quote_of_the_day(category: &str) -> Result<Box<(String, String)>, S
                 }
             }
         }
-        Err(_) => return Err("Request Failed".to_string()),
+        Err(e) => return Err(e.to_string()),
     }
 }

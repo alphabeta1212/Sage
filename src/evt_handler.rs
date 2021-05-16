@@ -1,9 +1,4 @@
-// use serenity::model::channel::{
-//     Reaction,
-//     ReactionType::{Custom, Unicode},
-// };
 use serenity::{model::gateway::Ready, prelude::*};
-
 pub struct Handler;
 
 impl EventHandler for Handler {

@@ -4,3 +4,4 @@
 /target/release/deps
 .vscode/settings.json
 *.sh
+*.txt
