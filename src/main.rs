@@ -12,8 +12,9 @@ use serenity::client::Client;
 use serenity::{framework::standard::StandardFramework, model::id::ChannelId};
 use std::collections::HashSet;
 use std::env;
+use std::fs::OpenOptions;
 use std::io::Read;
-use std::{fs::File, u64};
+use std::u64;
 use tokio::time::{sleep, Duration};
 
 #[tokio::main]
@@ -46,11 +47,23 @@ async fn main() {
     let client_ch = client.cache_and_http.clone();
     tokio::spawn(async move {
         loop {
+            println!("Time for some quotes");
+            let file = OpenOptions::new()
+                .write(true)
+                .read(true)
+                .create_new(true)
+                .open("sublist.txt");
+            let mut file = match file {
+                Ok(file) => file,
+                Err(_) => OpenOptions::new()
+                    .read(true)
+                    .open("sublist.txt")
+                    .expect("cannot open file"),
+            };
+            // let mut file = File::open("sublist.txt").expect("Cannot open File");
+            let mut subscribers = String::new();
             match qod_api::quote_of_the_day("funny").await {
                 Ok(qod_tuple) => {
-                    println!("Time for some quotes");
-                    let mut file = File::open("sublist.txt").expect("Cannot open File");
-                    let mut subscribers = String::new();
                     file.read_to_string(&mut subscribers)
                         .expect("Error reading file");
                     match subscribers.len() {
