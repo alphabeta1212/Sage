@@ -91,7 +91,7 @@ impl Database {
                 // Ping the server to see if you can connect to the cluster
             }
             Err(why) => {
-                println!("Failed to make a connection");
+                println!("Failed to make a connection [{}]", why);
                 Err(DbHandlerError::FAILED_CONNECTION)
             }
         }
