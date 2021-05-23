@@ -8,12 +8,12 @@ use commands::EMOJI_GROUP;
 use commands::GENERAL_GROUP;
 use evt_handler::Handler;
 
-use serenity::client::Client;
+use db_handler::Database;
+
+use serenity::{client::Client, http::Http};
 use serenity::{framework::standard::StandardFramework, model::id::ChannelId};
 use std::collections::HashSet;
 use std::env;
-use std::fs::OpenOptions;
-use std::io::Read;
 use std::u64;
 use tokio::time::{sleep, Duration};
 
@@ -24,81 +24,74 @@ async fn main() {
     match &api_token.len() {
         0 => panic!("Token Not found!!"),
         _ => {
-            client = Client::new(&api_token, Handler).expect("Error creating client");
+            let http = Http::new_with_token(&api_token);
+            let (owners, _) = match http.get_current_application_info().await {
+                Ok(info) => {
+                    let mut owners = HashSet::new();
+                    if let Some(team) = info.team {
+                        owners.insert(team.owner_user_id);
+                    } else {
+                        owners.insert(info.owner.id);
+                    }
+                    match http.get_current_user().await {
+                        Ok(bot_id) => (owners, bot_id.id),
+                        Err(why) => panic!("Could not access the bot id: {:?}", why),
+                    }
+                }
+                Err(why) => panic!("Could not access application info: {:?}", why),
+            };
+            client = Client::builder(&api_token)
+                .event_handler(Handler)
+                .framework(
+                    StandardFramework::new()
+                        .configure(|c| c.prefix("!").owners(owners))
+                        .help(&HELP)
+                        .group(&GENERAL_GROUP)
+                        .group(&EMOJI_GROUP)
+                        .group(&ADMIN_GROUP),
+                )
+                .await
+                .unwrap();
         }
     };
 
-    let owners = match client.cache_and_http.http.get_current_application_info() {
-        Ok(info) => {
-            let mut owners = HashSet::new();
-            owners.insert(info.owner.id);
-            owners
-        }
-        Err(why) => panic!("Could not access app info: {:?}", why),
-    };
-    client.with_framework(
-        StandardFramework::new()
-            .configure(|c| c.prefix("!").owners(owners))
-            .help(&HELP)
-            .group(&GENERAL_GROUP)
-            .group(&EMOJI_GROUP)
-            .group(&ADMIN_GROUP),
-    );
     let client_ch = client.cache_and_http.clone();
+
+    let mut db = Database::new();
+    let db_uri = env::var("MONGO_URI").unwrap();
+    let _ = db.make_connection(db_uri).await;
+
     tokio::spawn(async move {
         loop {
-            println!("Time for some quotes");
-            let file = OpenOptions::new()
-                .write(true)
-                .read(true)
-                .create_new(true)
-                .open("sublist.txt");
-            let mut file = match file {
-                Ok(file) => file,
-                Err(_) => OpenOptions::new()
-                    .read(true)
-                    .open("sublist.txt")
-                    .expect("cannot open file"),
-            };
-            // let mut file = File::open("sublist.txt").expect("Cannot open File");
-            let mut subscribers = String::new();
-            match qod_api::quote_of_the_day("funny").await {
-                Ok(qod_tuple) => {
-                    file.read_to_string(&mut subscribers)
-                        .expect("Error reading file");
-                    match subscribers.len() {
-                        0 => println!("List not populated"),
-                        _ => {
-                            let (quote, author) = *qod_tuple;
-                            let message = String::from(format!("{}\n-_{}_", quote, author));
-                            for subs in subscribers.split("\n").into_iter() {
-                                let chid: u64 = subs.parse::<u64>().expect("Not a u64 number");
+            if let Some(data) = db.get_cached_data().await {
+                let subscriber = data.as_ref();
+                println!("{:?}", subscriber.funny);
+                for channels in &subscriber.funny {
+                    match qod_api::quote_of_the_day("funny").await {
+                        Ok(qod_tuple) => match channels.len() {
+                            0 => println!("Empty Entry"),
+                            _ => {
+                                let (quote, author) = *qod_tuple;
+                                let message = String::from(format!("{}\n-_{}_", quote, author));
+                                let chid: u64 = channels.parse::<u64>().expect("Not a u64 number");
                                 let channel = ChannelId(chid);
-                                match subs.len() {
-                                    0 => panic!("subscribers Not found!!"),
-                                    _ => {
-                                        channel
-                                            .say(
-                                                &client_ch.http,
-                                                // format!("{}\n-{}", *quote.0, *quote.1).to_string(),
-                                                &message,
-                                            )
-                                            .expect("Failed to deliver message");
-                                    }
-                                };
-                                println!("Sent quote to {}", subs);
+                                channel
+                                    .say(&client_ch.http, &message)
+                                    .await
+                                    .expect("Failed to deliver message");
+                                println!("Sent quote to {}", chid);
                             }
-                        }
+                        },
+                        Err(why) => println!("Error occurred: {}", why),
                     };
                 }
-                Err(why) => println!("Error occurred: {}", why),
-            };
+            }
             sleep(Duration::from_secs(86400)).await; //86400 seconds in a day
         }
     });
 
     //Send client to quotes_task
-    if let Err(msg) = client.start() {
+    if let Err(msg) = client.start().await {
         println!("Error : {:?}", msg);
     }
 }

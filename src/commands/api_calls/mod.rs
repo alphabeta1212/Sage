@@ -73,22 +73,22 @@ impl Obj {
     }
 }
 
-#[tokio::main]
-pub async fn get_genre_lists() -> Result<Vec<String>, Box<dyn std::error::Error>> {
+pub async fn get_genre_lists() -> Result<Vec<String>, String> {
     let nyt_token = env::var("NYT_TOKEN").unwrap();
     let list_names = reqwest::get(format!(
         "https://api.nytimes.com/svc/books/v3/lists/names.json?api-key={}",
         &nyt_token
     ))
-    .await?
+    .await
+    .expect("Cannot reach the API servers")
     .json::<Obj>()
-    .await?
+    .await
+    .expect("Cannot deserialize")
     .get_list_names()
     .unwrap();
     Ok(list_names)
 }
 
-#[tokio::main]
 pub async fn get_top_books(list_name: &str) -> Result<Vec<(String, String, String)>, String> {
     let nyt_token = env::var("NYT_TOKEN").unwrap();
     match reqwest::get(format!(

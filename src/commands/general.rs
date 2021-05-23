@@ -1,5 +1,5 @@
 use serenity::framework::standard::{
-    help_commands,
+    help_commands::with_embeds,
     macros::{command, group, help},
     Args, CommandGroup, CommandResult, HelpOptions,
 };
@@ -18,43 +18,61 @@ use crate::commands::api_calls::{get_genre_lists, get_top_books};
 #[lacking_permissions = "Nothing"]
 #[lacking_role = "Nothing"]
 #[lacking_ownership = "Strike"]
-fn help(
-    context: &mut Context,
+async fn help(
+    context: &Context,
     msg: &Message,
     args: Args,
     help_options: &'static HelpOptions,
     groups: &[&'static CommandGroup],
     owners: HashSet<UserId>,
 ) -> CommandResult {
-    help_commands::with_embeds(context, msg, args, help_options, groups, owners)
+    let _ = with_embeds(context, msg, args, help_options, groups, owners);
+    Ok(())
 }
 
 #[group]
+#[prefix = "book"]
 #[commands(ping, say, genres, bestof)]
 struct General;
 
 #[command]
-fn ping(ctx: &mut Context, msg: &Message) -> CommandResult {
-    msg.reply(&ctx, "Pong!")?;
+async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.reply(&ctx, "Pong!").await?;
     Ok(())
 }
 
 #[command]
-fn genres(ctx: &mut Context, msg: &Message) -> CommandResult {
-    let list = get_genre_lists();
+async fn genres(ctx: &Context, msg: &Message) -> CommandResult {
     let mut string = String::new();
-    for entry in list.unwrap() {
-        string.push('\n');
-        string.push_str(&entry);
+    match get_genre_lists().await {
+        Ok(list) => {
+            for entry in list {
+                string.push('\n');
+                string.push_str(&entry);
+            }
+            msg.channel_id
+                .say(
+                    &ctx.http,
+                    format!("Following genres are available:\n{}", string),
+                )
+                .await?;
+        }
+        Err(_) => {
+            msg.channel_id
+                .say(
+                    &ctx.http,
+                    format!("Sorry no Genres are available at this moment"),
+                )
+                .await?;
+        }
     }
-    msg.reply(&ctx, format!("Following genres are available:\n{}", string))?;
     Ok(())
 }
 
 #[command]
-fn bestof(ctx: &mut Context, msg: &Message, args: Args) -> CommandResult {
+async fn bestof(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let mut string = String::new();
-    match get_top_books(args.rest()) {
+    match get_top_books(args.rest()).await {
         Ok(list) => {
             for (title, author, desc) in list {
                 string.push_str(&format!(
@@ -62,20 +80,22 @@ fn bestof(ctx: &mut Context, msg: &Message, args: Args) -> CommandResult {
                     title, author, desc
                 ));
             }
-            msg.channel_id.say(&ctx.http, &string)?;
+            msg.channel_id.say(&ctx.http, &string).await?;
         }
         Err(_) => {
-            msg.channel_id.say(
-                &ctx.http,
-                &format!("No books found in {} genre", args.rest()),
-            )?;
+            msg.channel_id
+                .say(
+                    &ctx.http,
+                    &format!("No books found in {} genre", args.rest()),
+                )
+                .await?;
         }
     };
     Ok(())
 }
 
 #[command]
-fn say(ctx: &mut Context, msg: &Message, args: Args) -> CommandResult {
-    msg.channel_id.say(&ctx.http, args.rest())?;
+async fn say(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    msg.channel_id.say(&ctx.http, args.rest()).await?;
     Ok(())
 }

@@ -16,21 +16,21 @@ struct Emoji;
 #[command]
 #[description = "This man is weird"]
 #[required_permissions("MANAGE_EMOJIS")]
-fn bird(ctx: &mut Context, msg: &Message) -> CommandResult {
-    msg.channel_id.say(&ctx.http, "🐦")?;
+async fn bird(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.channel_id.say(&ctx.http, "🐦").await?;
     Ok(())
 }
 
 #[command]
 #[description = "This man is weird"]
-fn man(ctx: &mut Context, msg: &Message) -> CommandResult {
-    msg.channel_id.say(&ctx.http, "🕴️")?;
+async fn man(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.channel_id.say(&ctx.http, "🕴️").await?;
     Ok(())
 }
 
 #[command]
 #[description = "For when you really wanna cry"]
-fn onion(ctx: &mut Context, msg: &Message) -> CommandResult {
-    msg.channel_id.say(&ctx.http, "🧅")?;
+async fn onion(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.channel_id.say(&ctx.http, "🧅").await?;
     Ok(())
 }
