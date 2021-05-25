@@ -11,7 +11,6 @@ struct QuoteJson {
     quote: String,
     length: String,
     author: String,
-    tags: Vec<String>,
     category: String,
     language: String,
     date: String,
@@ -45,6 +44,7 @@ impl OuterJson {
 
 pub async fn quote_of_the_day(category: &str) -> Result<Box<(String, String)>, String> {
     let client = reqwest::Client::new();
+    println!("Category: {}", category);
     match client
         .get(format!(
             "https://quotes.rest/qod?category={}&language=en",
