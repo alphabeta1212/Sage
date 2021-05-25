@@ -84,11 +84,11 @@ async fn main() {
                                 println!("{}", message);
                                 let chid: u64 = channels.parse::<u64>().expect("Not a u64 number");
                                 let channel = ChannelId(chid);
-                                // channel
-                                //     .say(&client_ch.http, &message)
-                                //     .await
-                                //     .expect("Failed to deliver message");
-                                // println!("Sent quote to {}", chid);
+                                channel
+                                    .say(&client_ch.http, &message)
+                                    .await
+                                    .expect("Failed to deliver message");
+                                println!("Sent quote to {}", chid);
                             }
                         },
                         Err(why) => println!("Error occurred: {}", why),
