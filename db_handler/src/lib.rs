@@ -18,6 +18,7 @@ pub struct Subscriber {
     pub love: Vec<String>,
     pub art: Vec<String>,
     pub students: Vec<String>,
+    pub mod_channel: Vec<String>,
     Server: String,
 }
 pub enum DbHandlerError {
@@ -156,67 +157,3 @@ impl Database {
         }
     }
 }
-
-// #[tokio::main]
-// async fn main() -> mongodb::error::Result<()> {
-//     // Parse your connection string into an options struct
-//     let mut client_options =
-//         ClientOptions::parse("mongodb+srv://watermalone:vadodara@discord-data.cna4q.mongodb.net/quote_subscribers?retryWrites=true&w=majority")
-//             .await?;
-//     // Manually set an option
-//     client_options.app_name = Some("savant-monk".to_string());
-//     // Get a handle to the cluster
-//     let client = Client::with_options(client_options)?;
-//     // Ping the server to see if you can connect to the cluster
-//     client
-//         .database("quote_subscribers")
-//         .run_command(doc! {"ping": 1}, None)
-//         .await?;
-//     println!("Connected successfully.");
-//     // List the names of the databases in that cluster
-//     for db_name in client.list_database_names(None, None).await? {
-//         println!("{}", db_name);
-//     }
-//     // let opts = CreateCollectionOptions::builder();
-//     // let opts = opts.size(18).build();
-//     // db.create_collection("subscribers", opts).await?;
-//     // for collection_name in client
-//     //     .database("quote_subscribers")
-//     //     .collection("subscribers")
-//     //     .find("{'channel':['1234']}", None)
-//     //     .await?
-//     // {
-//     //     println!("{}", collection_name);
-//     // }
-//     let connection = client
-//         .database("quote_subscribers")
-//         .collection::<Subscriber>("subscribers");
-//     let filter = doc! {"name":"watermalone"};
-//     let mut cursor = connection.find(filter.clone(), None).await?;
-//     // Iterate over the results of the cursor.
-//     while let Some(subscriber) = cursor.try_next().await? {
-//         println!("Channel: {:?} {:?}", subscriber._id, subscriber.channel);
-//     }
-//     let update = doc! {"$addToSet" : {"channel":"5"}};
-//     let update_result = connection.update_one(filter.clone(), update, None).await?;
-//     let mut cursor = connection.find(filter.clone(), None).await?;
-//     // Iterate over the results of the cursor.
-//     while let Some(subscriber) = cursor.try_next().await? {
-//         println!("Channel: {:?} {:?}", subscriber._id, subscriber.channel);
-//     }
-//     let mut cursor = connection.find(filter.clone(), None).await?;
-//     // Iterate over the results of the cursor.
-//     while let Some(subscriber) = cursor.try_next().await? {
-//         println!("Channel: {:?} {:?}", subscriber._id, subscriber.channel);
-//     }
-//     let pull_obj = doc! { "$pull": { "channel": "5" } };
-//     let update_result = connection
-//         .update_one(filter.clone(), pull_obj, None)
-//         .await?;
-//     let mut cursor = connection.find(filter.clone(), None).await?
-//     // Iterate over the results of the cursor.
-//     while let Some(subscriber) = cursor.try_next().await? {
-//         println!("Channel: {:?} {:?}", subscriber._id, subscriber.channel);
-//     }
-//     Ok(())
-// }

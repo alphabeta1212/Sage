@@ -1,7 +1,12 @@
+use std::env;
+
+use db_handler::Database;
 use serenity::async_trait;
+use serenity::model::id::ChannelId;
 use serenity::{model::gateway::Ready, prelude::*};
 pub struct Handler;
 
+#[async_trait]
 impl EventHandler for Handler {
     // fn reaction_add(&self, ctx: Context, reaction: Reaction) {
     //     if let Err(why) = reaction.channel_id.say(
@@ -141,14 +146,34 @@ impl EventHandler for Handler {
     // ) {
     // }
 
-    // async fn guild_member_removal(
-    //     &self,
-    //     _ctx: Context,
-    //     _guild_id: serenity::model::id::GuildId,
-    //     _user: serenity::model::prelude::User,
-    //     _member_data_if_available: Option<serenity::model::guild::Member>,
-    // ) {
-    // }
+    async fn guild_member_removal(
+        &self,
+        _ctx: Context,
+        _guild_id: serenity::model::id::GuildId,
+        _user: serenity::model::prelude::User,
+        _member_data_if_available: Option<serenity::model::guild::Member>,
+    ) {
+        println!("User left : [{}]", _user.name);
+        let mut db = Database::new();
+        let db_uri = env::var("MONGO_URI").unwrap();
+        let _ = db.make_connection(db_uri).await;
+
+        if let Some(data) = db.get_cached_data().await {
+            let message = String::from(format!(
+                "Tussi Jaa rahe ho **{}**? Tussi na Jao! :pleading_face: ",
+                _user.name
+            ));
+            let subscriber = data.as_ref();
+            let chid: u64 = subscriber.mod_channel[0]
+                .parse::<u64>()
+                .expect("Not a u64 number");
+            let channel = ChannelId(chid);
+            channel
+                .say(&_ctx.http, &message)
+                .await
+                .expect("Failed to deliver message");
+        }
+    }
 
     // async fn guild_member_update(
     //     &self,

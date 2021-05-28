@@ -10,7 +10,7 @@ use evt_handler::Handler;
 
 use db_handler::Database;
 
-use serenity::{client::Client, http::Http};
+use serenity::{client::bridge::gateway::GatewayIntents, client::Client, http::Http};
 use serenity::{framework::standard::StandardFramework, model::id::ChannelId};
 use std::collections::{HashMap, HashSet};
 use std::env;
@@ -42,6 +42,11 @@ async fn main() {
             };
             client = Client::builder(&api_token)
                 .event_handler(Handler)
+                .intents(
+                    GatewayIntents::GUILDS
+                        | GatewayIntents::GUILD_MESSAGES
+                        | GatewayIntents::GUILD_MEMBERS,
+                )
                 .framework(
                     StandardFramework::new()
                         .configure(|c| c.prefix("!").owners(owners))
@@ -55,52 +60,52 @@ async fn main() {
         }
     };
 
-    let client_ch = client.cache_and_http.clone();
+    // let client_ch = client.cache_and_http.clone();
 
-    let mut db = Database::new();
-    let db_uri = env::var("MONGO_URI").unwrap();
-    let _ = db.make_connection(db_uri).await;
+    // let mut db = Database::new();
+    // let db_uri = env::var("MONGO_URI").unwrap();
+    // let _ = db.make_connection(db_uri).await;
 
-    if let Some(data) = db.get_cached_data().await {
-        tokio::spawn(async move {
-            let subscriber = data.as_ref();
-            let mut quote_rcv: HashMap<&str, &Vec<String>> = HashMap::new();
-            quote_rcv.insert("funny", &subscriber.funny);
-            quote_rcv.insert("inspire", &subscriber.inspire);
-            quote_rcv.insert("management", &subscriber.management);
-            quote_rcv.insert("sports", &subscriber.sports);
-            quote_rcv.insert("life", &subscriber.life);
-            quote_rcv.insert("love", &subscriber.love);
-            quote_rcv.insert("art", &subscriber.art);
-            quote_rcv.insert("students", &subscriber.students);
-            for (k, v) in &quote_rcv {
-                for channels in *v {
-                    match qod_api::quote_of_the_day(*k).await {
-                        Ok(qod_tuple) => match channels.len() {
-                            0 => println!("Empty Entry"),
-                            _ => {
-                                let (quote, author) = *qod_tuple;
-                                let message = String::from(format!("{}\n-_{}_", quote, author));
-                                println!("{}", message);
-                                let chid: u64 = channels.parse::<u64>().expect("Not a u64 number");
-                                let channel = ChannelId(chid);
-                                channel
-                                    .say(&client_ch.http, &message)
-                                    .await
-                                    .expect("Failed to deliver message");
-                                println!("Sent quote to {}", chid);
-                            }
-                        },
-                        Err(why) => println!("Error occurred: {}", why),
-                    };
-                }
-            }
-            //sleep(Duration::from_secs(86400)).await; //86400 seconds in a day
-            //Heroku automatically reboots the process once per day. Hence the loop and sleep is not needed.
-        });
-    } else {
-        println!("Cannot connect to MongoDB. Hence, no quotes.");
-    }
+    // if let Some(data) = db.get_cached_data().await {
+    //     tokio::spawn(async move {
+    //         let subscriber = data.as_ref();
+    //         let mut quote_rcv: HashMap<&str, &Vec<String>> = HashMap::new();
+    //         quote_rcv.insert("funny", &subscriber.funny);
+    //         quote_rcv.insert("inspire", &subscriber.inspire);
+    //         quote_rcv.insert("management", &subscriber.management);
+    //         quote_rcv.insert("sports", &subscriber.sports);
+    //         quote_rcv.insert("life", &subscriber.life);
+    //         quote_rcv.insert("love", &subscriber.love);
+    //         quote_rcv.insert("art", &subscriber.art);
+    //         quote_rcv.insert("students", &subscriber.students);
+    //         for (k, v) in &quote_rcv {
+    //             for channels in *v {
+    //                 match qod_api::quote_of_the_day(*k).await {
+    //                     Ok(qod_tuple) => match channels.len() {
+    //                         0 => println!("Empty Entry"),
+    //                         _ => {
+    //                             let (quote, author) = *qod_tuple;
+    //                             let message = String::from(format!("{}\n-_{}_", quote, author));
+    //                             println!("{}", message);
+    //                             let chid: u64 = channels.parse::<u64>().expect("Not a u64 number");
+    //                             let channel = ChannelId(chid);
+    //                             // channel
+    //                             //     .say(&client_ch.http, &message)
+    //                             //     .await
+    //                             //     .expect("Failed to deliver message");
+    //                             println!("Sent quote to {}", chid);
+    //                         }
+    //                     },
+    //                     Err(why) => println!("Error occurred: {}", why),
+    //                 };
+    //             }
+    //         }
+    //         //sleep(Duration::from_secs(86400)).await; //86400 seconds in a day
+    //         //Heroku automatically reboots the process once per day. Hence the loop and sleep is not needed.
+    //     });
+    // } else {
+    //     println!("Cannot connect to MongoDB. Hence, no quotes.");
+    // }
 
     //Send client to quotes_task
     if let Err(msg) = client.start().await {
